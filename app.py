@@ -20,8 +20,8 @@ from langchain.prompts.chat import (
 import textwrap
 import os
 
-# load_dotenv(find_dotenv())
-api_key = st.secrets["OPENAI_API_KEY"]
+load_dotenv(find_dotenv())
+# api_key = st.secrets["OPENAI_API_KEY"]
 
 embeddings = OpenAIEmbeddings()
 
