@@ -20,8 +20,9 @@ from langchain.prompts.chat import (
 import textwrap
 import os
 
-load_dotenv(find_dotenv())
-# openai_api_key = os.getenv("OPENAI_API_KEY")
+# load_dotenv(find_dotenv())
+api_key = st.secrets["OPENAI_API_KEY"]
+
 embeddings = OpenAIEmbeddings()
 
 
@@ -86,7 +87,7 @@ def get_response_from_query(db, query, k=4):
 
 
 def main():
-    load_dotenv()
+    # load_dotenv()
     st.set_page_config(page_title="Ask your PDF or YouTube Video")
     st.image("https://assets.website-files.com/5e318ddf83dd66053d55c38a/602ba7efd5e8b761ed988e2a_FBF%20logo%20wide.png",
              caption='Study Material Learner', use_column_width=True)
