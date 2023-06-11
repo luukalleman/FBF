@@ -26,6 +26,13 @@ load_dotenv(find_dotenv())
 embeddings = OpenAIEmbeddings()
 
 
+def get_questions_from_summary(summary, num_questions=5):
+    # Ask GPT-3 to generate questions about the summary
+    question_prompt = f"Generate {num_questions} questions about the following summary: {summary}"
+    questions, _ = get_response_from_query(db, question_prompt)
+    return questions.split("\n")  # Assume each question is on a new line
+
+
 def summarize_text(db):
     # Use the logic of question answering to ask the model to summarize the text
     summary_question = "Can you summarize this text for me? Make sure to be specific and explain the most important subjects in high detail. Use a nice layout so it's easier to understand, so use new lines etc. Please use emoji's to make it cleaner."
@@ -173,6 +180,15 @@ def main():
             with st.expander('Summarise PDF'):
                 summary = summarize_text(knowledge_base)
                 st.write(summary)
+
+            db = FAISS.from_texts([summary], embeddings)
+
+            # Generate questions from the summary
+            with st.expander("Quiz questions"):
+                if db is not None:
+                    questions = get_questions_from_summary(db, summary)
+                    for i, question in enumerate(questions, start=1):
+                        st.markdown(f"**Question {i}:** {question}")
 
     db = None  # Initialize db
 
