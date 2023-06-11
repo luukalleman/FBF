@@ -28,7 +28,7 @@ embeddings = OpenAIEmbeddings()
 
 def summarize_text(db):
     # Use the logic of question answering to ask the model to summarize the text
-    summary_question = "Can you summarize this content?"
+    summary_question = "Can you summarize this text for me? Make sure to be specific and explain the most important subjects in high detail. Use a nice layout so it's easier to understand, so use new lines etc. Please use emoji's to make it cleaner."
     summary, _ = get_response_from_query(db, summary_question)
     return summary
 
@@ -88,14 +88,14 @@ def get_response_from_query(db, query, k=4):
 
 def main():
     # load_dotenv()
-    st.set_page_config(page_title="Ask your PDF or YouTube Video")
+    st.set_page_config(page_title="Study Material Learner")
     st.image("https://assets.website-files.com/5e318ddf83dd66053d55c38a/602ba7efd5e8b761ed988e2a_FBF%20logo%20wide.png",
              caption='Study Material Learner', use_column_width=True)
 
     st.title("Ask Your PDF or YouTube Video")
     st.write("""
     This app allows you to upload a PDF or input a YouTube video URL and ask questions about its content. 
-    After you upload a PDF or input a YouTube URL, it will be processed and you will be able to ask any question about the content.
+    After you upload a PDF or input a YouTube URL, it will be processed and you will be able to ask any question about the content. It also generates a summary of the content.
     """)
 
     if 'conversation_history' not in st.session_state:
@@ -117,6 +117,8 @@ def main():
             st.session_state.user_question = ""
         user_question = st.sidebar.text_input(
             "Ask a question about your PDF:", value=st.session_state.user_question)
+
+        ask_button_clicked = st.sidebar.button('Ask')
 
         if pdf is not None:
             pdf_reader = PdfReader(pdf)
@@ -144,7 +146,7 @@ def main():
             knowledge_base = FAISS.from_texts(chunks, embeddings)
             progress.progress(60)
 
-            if user_question and st.sidebar.button('Ask'):
+            if user_question and ask_button_clicked:
                 st.session_state.conversation_history.append(
                     ('You', user_question))
 
@@ -185,11 +187,13 @@ def main():
             # Process the YouTube video transcript as you did in your existing code
             db = create_db_from_youtube_video_url(youtube_url)
 
-            # Ask a question about the YouTube video
             youtube_question = st.sidebar.text_input(
                 "Ask a question about the YouTube video:", value=st.session_state.user_question)
 
-            if youtube_question and st.sidebar.button('Ask YouTube Question'):
+            ask_youtube_button_clicked = st.sidebar.button(
+                'Ask YouTube Question')
+
+            if youtube_question and ask_youtube_button_clicked:
                 st.session_state.conversation_history.append(
                     ('You', youtube_question))
 
@@ -199,20 +203,22 @@ def main():
                 # Clear the text input box
                 st.session_state.user_question = ""
 
-        # Ask for a summary of the YouTube video
+            # Ask for a summary of the YouTube video
             summary_question = "Can you summarize this video for me? Make sure to be specific and explain the most important subjects in high detail. Use a nice layout so it's easier to understand. Please use emoji's to make it cleaner. "
             with st.expander("Summarise YouTube video"):
                 summary, _ = get_response_from_query(db, summary_question)
                 # st.session_state.conversation_history.append(('Bot', summary))
                 st.write(summary)
 
-    st.sidebar.markdown("## Conversation")
-    for role, message in st.session_state.conversation_history:
-        if role == 'Bot':
-            st.sidebar.markdown(
-                f'<div style="color: #6c757d;">{role}: {message}</div>', unsafe_allow_html=True)
-        else:
-            st.sidebar.markdown(f"{role}: {message}")
+    # Only display the conversation section if there are any questions in the conversation history
+    if st.session_state.conversation_history:
+        st.sidebar.markdown("## Conversation")
+        for role, message in st.session_state.conversation_history:
+            if role == 'Bot':
+                st.sidebar.markdown(
+                    f'<div style="color: #6c757d;">{role}: {message}</div>', unsafe_allow_html=True)
+            else:
+                st.sidebar.markdown(f"{role}: {message}")
 
 
 if __name__ == '__main__':
